@@ -23,6 +23,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import org.json.JSONObject;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -43,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothLeScanner elEscanner;
 
     private ScanCallback callbackDelEscaneo = null;
+
+    private String urlDestino = "http://192.168.132.182:13000/api/medidasmike/";
 
     // --------------------------------------------------------------
     // --------------------------------------------------------------
@@ -156,7 +160,8 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("España", "ozono " + ozono);
                     int temperatura = Utilidades.bytesToInt(trama.getMinor())/1000;
                     Log.d("España", "temperatura " + temperatura);
-                    Server.guardarmedicion(String.valueOf(ozono),String.valueOf(temperatura),requestQueue);
+
+                    guardarMedicion(String.valueOf(ozono),String.valueOf(temperatura));
                 }else{
                     Log.d("Miguel","Mike");
                 }
@@ -187,20 +192,56 @@ public class MainActivity extends AppCompatActivity {
         this.elEscanner.startScan( this.callbackDelEscaneo );
     } // ()
 
+
+    private void guardarMedicion(String ozono, String temperatura) {
+        LogicaFake logicaFake = new LogicaFake();
+
+        try {
+            String cuerpo = "{\"sensor_type\":" + 1 + "," +
+                    "\"value\":" + ozono + "}";
+
+
+            logicaFake.hacerPeticionREST("POST" , urlDestino, cuerpo, new LogicaFake.RespuestaREST() {
+                @Override
+                public void callback(int codigo, String cuerpo) {
+                    Log.d("RESPUESTA", "Codigo: " + codigo + " | Cuerpo:" + cuerpo);
+                }
+            });
+        } catch (Exception e) {
+            // Bloque catch para manejar excepciones generales
+            Log.e("Error", "Se produjo una excepción: " + e.getMessage());
+        }
+
+        logicaFake = new LogicaFake();
+
+        try {
+            String cuerpo = "{\"sensor_type\":" + 2 + "," +
+                    "\"value\":" + temperatura + "}";
+
+
+            logicaFake.hacerPeticionREST("POST" , urlDestino, cuerpo, new LogicaFake.RespuestaREST() {
+                @Override
+                public void callback(int codigo, String cuerpo) {
+                    Log.d("RESPUESTA", "Codigo: " + codigo + " | Cuerpo:" + cuerpo);
+                }
+            });
+        } catch (Exception e) {
+            // Bloque catch para manejar excepciones generales
+            Log.e("Error", "Se produjo una excepción: " + e.getMessage());
+        }
+    }
+
+
     // --------------------------------------------------------------
     // --------------------------------------------------------------
     @SuppressLint("MissingPermission")
     private void detenerBusquedaDispositivosBTLE() {
-        Log.d("España", "saparao: ");
-        if ( this.callbackDelEscaneo == null ) {
-            Log.d("España", "saparao2 ");
-            return;
-        }
-        this.elEscanner.stopScan( this.callbackDelEscaneo );
-        Log.d("España", "saparao3");
-        this.callbackDelEscaneo = null;
+            Log.d(ETIQUETA_LOG, "boton detener busqueda dispositivos BTLE Pulsado");
 
-    } // ()
+            // Llamar al método para detener la búsqueda de dispositivos BLE
+            this.detenerBusquedaDispositivosBTLE();
+        }
+
 
     // --------------------------------------------------------------
     // --------------------------------------------------------------
@@ -214,10 +255,10 @@ public class MainActivity extends AppCompatActivity {
     // --------------------------------------------------------------
     public void botonBuscarNuestroDispositivoBTLEPulsado( View v ) {
         Log.d(ETIQUETA_LOG, " boton nuestro dispositivo BTLE Pulsado" );
-        //this.buscarEsteDispositivoBTLE( Utilidades.stringToUUID( "EPSG-GTI-PROY-3A" ) );
+        //this.buscarEsteDispositivoBTLE( Utilidades.stringToUUID( "VALENCIAMIGUELAB" ) );
 
-        this.buscarEsteDispositivoBTLE( "JAINIS-ES-UN-SOL" );
-        this.buscarEsteDispositivoBTLE( "fistro" );
+        //this.buscarEsteDispositivoBTLE( "JAINIS-ES-UN-SOL" );
+        this.buscarEsteDispositivoBTLE( "VALENCIAMIGUELAB" );
 
     } // ()
 
